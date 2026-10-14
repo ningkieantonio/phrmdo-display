@@ -66,6 +66,8 @@
             background: black;
             width: 100%;
             height: 100%;
+            position: relative;
+            overflow: hidden; /* Hides any overflow caused by scaling */
         }
 
         .right-container {
@@ -91,12 +93,14 @@
             object-fit: cover;
         }
 
-        /* Web Link / Billboard iframe styling */
-        iframe {
-            width: 100%;
-            height: 100%;
+        /* Fixed Frame 1: Scaled to fit TV browser perfectly without cutting off */
+        .left-box iframe {
+            width: 125%;   /* Compensates for the scale down */
+            height: 125%;  /* Compensates for the scale down */
             border: none;
             background: #ffffff;
+            transform: scale(0.8); /* Shrinks the webpage view to 80% so it fits TV screens */
+            transform-origin: top left;
         }
 
         /* Footer Ticker Bar */
@@ -135,7 +139,7 @@
 
     <!-- Custom Display Grid Layout -->
     <div class="grid-container">
-        <!-- Frame 1: Left Half (La Union Billboard Web Link) -->
+        <!-- Frame 1: Left Half (La Union Billboard Web Link with TV Scale Fix) -->
         <div class="left-box">
             <iframe id="webLinkFrame" src="" allow="autoplay; encrypted-media"></iframe>
         </div>
@@ -170,8 +174,8 @@
         // --- 1. CONFIGURE FRAME 1 WEB LINK ---
         const targetWebLink = "https://citizenscharter.launion.gov.ph/billboard/25?mode=tv";
 
-        // --- 2. CONFIGURE FRAME 2 VIDEO (Fixed to Direct Stream Link) ---
-        const video2List = ["https://drive.google.com/drive/folders/1LyWV8WqXjiuBqQP2QsP-fKwOBsRsHN9p"]; 
+        // --- 2. CONFIGURE FRAME 2 VIDEO (2.mp4 Direct Stream Link) ---
+        const video2List = ["https://lh3.googleusercontent.com/d/1LWia5QIeAeJbrvUggoHffOrR9W4Zj3xq"]; 
 
         // --- 3. CONFIGURE FRAMES 3 & 4 RANDOM POOL (3.mp4 to 8.mp4 Direct Stream Links) ---
         const folder3 = [
