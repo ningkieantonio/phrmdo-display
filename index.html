@@ -67,7 +67,7 @@
             width: 100%;
             height: 100%;
             position: relative;
-            overflow: hidden; /* Hides any overflow caused by scaling */
+            overflow: hidden;
         }
 
         .right-container {
@@ -93,13 +93,13 @@
             object-fit: cover;
         }
 
-        /* Fixed Frame 1: Scaled to fit TV browser perfectly without cutting off */
+        /* Fixed Frame 1: Scaled to exactly 67% view for TV browser */
         .left-box iframe {
-            width: 125%;   /* Compensates for the scale down */
-            height: 125%;  /* Compensates for the scale down */
+            width: 149%;   /* Compensates for 67% scaling (100 / 0.67) */
+            height: 149%;  /* Compensates for 67% scaling */
             border: none;
             background: #ffffff;
-            transform: scale(0.8); /* Shrinks the webpage view to 80% so it fits TV screens */
+            transform: scale(0.67); /* Exactly 67% view */
             transform-origin: top left;
         }
 
@@ -139,7 +139,7 @@
 
     <!-- Custom Display Grid Layout -->
     <div class="grid-container">
-        <!-- Frame 1: Left Half (La Union Billboard Web Link with TV Scale Fix) -->
+        <!-- Frame 1: Left Half (La Union Billboard Web Link scaled to 67%) -->
         <div class="left-box">
             <iframe id="webLinkFrame" src="" allow="autoplay; encrypted-media"></iframe>
         </div>
