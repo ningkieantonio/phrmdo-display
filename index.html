@@ -22,39 +22,6 @@
             flex-direction: column;
         }
 
-        /* Click-to-Start Audio Unlock Overlay */
-        #start-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background: rgba(0, 0, 0, 0.85);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 9999;
-            cursor: pointer;
-            transition: opacity 0.5s ease;
-        }
-
-        #start-overlay h2 {
-            font-size: 32px;
-            color: #00dcff;
-            margin-bottom: 15px;
-            text-align: center;
-        }
-
-        #start-overlay p {
-            font-size: 18px;
-            color: #cccccc;
-            background: #008cff;
-            padding: 15px 30px;
-            border-radius: 8px;
-            font-weight: bold;
-        }
-
         /* Header Banner */
         header {
             height: 90px;
@@ -120,19 +87,19 @@
             height: 100%;
         }
 
-        /* General iframe styling for YouTube players */
+        /* General iframe styling with pointer-events enabled for controls */
         iframe {
             width: 100%;
             height: 100%;
             border: none;
             background: #000000;
-            pointer-events: none; /* Disables clicking so controls don't pop up */
+            pointer-events: auto;
         }
 
         /* Fixed Frame 1: Scaled to 0.62 (62%) to fit TV browser layout */
         .left-box iframe {
-            width: 161%;   
-            height: 161%;  
+            width: 161%;    
+            height: 161%;   
             transform: scale(0.62); 
             transform-origin: top left;
             pointer-events: auto; /* Keeps billboard interactive */
@@ -159,13 +126,7 @@
         }
     </style>
 </head>
-<body onclick="startDisplay()">
-
-    <!-- Audio Unlock & Start Overlay -->
-    <div id="start-overlay">
-        <h2>PHRMDO WAITING LOUNGE</h2>
-        <p>▶ CLICK HERE OR PRESS OK TO START DISPLAY WITH SOUND</p>
-    </div>
+<body>
 
     <!-- Header Banner -->
     <header>
@@ -182,25 +143,23 @@
     <div class="grid-container">
         <!-- Frame 1: Left Half (La Union Billboard Web Link scaled to 62%) -->
         <div class="left-box">
-            <iframe id="webLinkFrame" src="" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"></iframe>
+            <iframe id="webLinkFrame" src="" allow="autoplay; encrypted-media"></iframe>
         </div>
 
         <!-- Right Side Container -->
         <div class="right-container">
-            <!-- Frame 2: Top Right -->
+            <!-- Frame 2: Top Right (YouTube Player with Controls enabled) -->
             <div class="top-right-box">
-                <iframe id="vid2Frame" src="" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"></iframe>
+                <iframe id="vid2Frame" src="" allow="autoplay; encrypted-media" allowfullscreen></iframe>
             </div>
 
-            <!-- Bottom Right Quarter Split -->
+            <!-- Bottom Right Quarter Split (Frames 3 & 4 with Controls enabled) -->
             <div class="bottom-right-row">
-                <!-- Frame 3 (Muted) -->
                 <div class="bottom-right-box">
-                    <iframe id="vid3Frame" src="" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"></iframe>
+                    <iframe id="vid3Frame" src="" allow="autoplay; encrypted-media" allowfullscreen></iframe>
                 </div>
-                <!-- Frame 4 (UNMUTED) -->
                 <div class="bottom-right-box">
-                    <iframe id="vid4Frame" src="" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"></iframe>
+                    <iframe id="vid4Frame" src="" allow="autoplay; encrypted-media" allowfullscreen></iframe>
                 </div>
             </div>
         </div>
@@ -214,22 +173,24 @@
     </footer>
 
     <script>
-        let displayStarted = false;
+        // --- 1. CONFIGURE FRAME 1 WEB LINK ---
+        const targetWebLink = "https://citizenscharter.launion.gov.ph/billboard/25?mode=tv";
 
-        function startDisplay() {
-            if (displayStarted) return;
-            displayStarted = true;
+        // --- 2. CONFIGURE FRAME 2 YOUTUBE LINK ---
+        const targetVid2YouTube = "https://www.youtube.com/embed/eGIry6EOY6Y?autoplay=1&mute=1&loop=1&playlist=eGIry6EOY6Y";
 
-            // Hide the overlay smoothly
-            let overlay = document.getElementById('start-overlay');
-            overlay.style.opacity = '0';
-            setTimeout(() => overlay.style.display = 'none', 500);
+        // --- 3. CONFIGURE FRAME 3 YOUTUBE LINK (Manual Input) ---
+        const targetVid3YouTube = "https://www.youtube.com/embed/YOUR_VIDEO_ID_3?autoplay=1&mute=1&loop=1&playlist=YOUR_VIDEO_ID_3";
 
-            // --- CONFIGURATION POOLS ---
-            const targetWebLink = "https://citizenscharter.launion.gov.ph/billboard/25?mode=tv";
-            const id2 = "eGIry6EOY6Y"; // Frame 2 Video ID
+        // --- 4. CONFIGURE FRAME 4 YOUTUBE LINK (Manual Input) ---
+        const targetVid4YouTube = "https://www.youtube.com/embed/YOUR_VIDEO_ID_4?autoplay=1&mute=1&loop=1&playlist=YOUR_VIDEO_ID_4";
 
-                
+        // --- SETUP ALL FRAMES ---
+        document.getElementById('webLinkFrame').src = targetWebLink;
+        document.getElementById('vid2Frame').src = targetVid2YouTube;
+        document.getElementById('vid3Frame').src = targetVid3YouTube;
+        document.getElementById('vid4Frame').src = targetVid4YouTube;
+
         // --- LIVE CLOCK & TICKER SCRIPT ---
         function updateClock() {
             const now = new Date();
