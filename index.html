@@ -126,7 +126,7 @@
         }
     </style>
 </head>
-<body>
+<body onclick="unlockAudio()"> <!-- Clicking anywhere on page instantly ensures audio permission is active -->
 
     <!-- Header Banner -->
     <header>
@@ -148,16 +148,18 @@
 
         <!-- Right Side Container -->
         <div class="right-container">
-            <!-- Frame 2: Top Right (Clean YouTube Player for Video 2) -->
+            <!-- Frame 2: Top Right (Muted Clean YouTube Player) -->
             <div class="top-right-box">
                 <iframe id="vid2Frame" src="" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"></iframe>
             </div>
 
-            <!-- Bottom Right Quarter Split (Frames 3 & 4 - Distinct Random YouTube Playback) -->
+            <!-- Bottom Right Quarter Split -->
             <div class="bottom-right-row">
+                <!-- Frame 3: Muted -->
                 <div class="bottom-right-box">
                     <iframe id="vid3Frame" src="" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"></iframe>
                 </div>
+                <!-- Frame 4: UNMUTED (Plays with sound after initial click) -->
                 <div class="bottom-right-box">
                     <iframe id="vid4Frame" src="" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"></iframe>
                 </div>
@@ -176,10 +178,10 @@
         // --- 1. CONFIGURE FRAME 1 WEB LINK ---
         const targetWebLink = "https://citizenscharter.launion.gov.ph/billboard/25?mode=tv";
 
-        // --- 2. CONFIGURE FRAME 2 YOUTUBE LINK ---
+        // --- 2. CONFIGURE FRAME 2 YOUTUBE LINK (Muted) ---
         const targetVid2YouTube = "https://www.youtube.com/embed/eGIry6EOY6Y?autoplay=1&mute=1&loop=1&playlist=eGIry6EOY6Y&controls=0&modestbranding=1&disablekb=1&fs=0&enablejsapi=1";
 
-        // --- 3. CONFIGURE YOUTUBE POOLS FOR FRAMES 3 & 4 ---
+        // --- 3. CONFIGURE YOUTUBE POOLS FOR FRAMES 3 (Muted) & 4 (Unmuted) ---
         const pool3 = [
             "tg5aaNzgFxI",
             "1HWRXTmSmbQ"
@@ -190,15 +192,15 @@
             "tg5aaNzgFxI"
         ];
 
-        // --- SETUP FRAMES 1 & 2 ---
+        // --- SETUP FRAMES 1 & 2 SIMULTANEOUSLY ---
         document.getElementById('webLinkFrame').src = targetWebLink;
         document.getElementById('vid2Frame').src = targetVid2YouTube;
 
-        // --- SETUP FRAMES 3 & 4 (Distinct Random YouTube Playback) ---
+        // --- SETUP FRAMES 3 & 4 SIMULTANEOUSLY (Distinct Random YouTube Playback) ---
         const f3 = document.getElementById('vid3Frame');
         const f4 = document.getElementById('vid4Frame');
 
-        function playRandomYouTubeDistinct(iframeElement, poolArray, otherIframeElement) {
+        function playRandomYouTubeDistinct(iframeElement, poolArray, otherIframeElement, isMuted) {
             if (poolArray.length === 0) return;
 
             let otherSrc = otherIframeElement.getAttribute('data-current-id');
@@ -212,15 +214,24 @@
 
             iframeElement.setAttribute('data-current-id', chosenId);
             
-            // Construct YouTube embed link with full Smart TV browser compatibility parameters
-            iframeElement.src = `https://www.youtube.com/embed/${chosenId}?autoplay=1&mute=1&loop=1&playlist=${chosenId}&controls=0&modestbranding=1&disablekb=1&fs=0&enablejsapi=1&origin=${encodeURIComponent(window.location.origin)}`;
+            // mute=1 for muted frames, mute=0 for unmuted Frame 4
+            const muteParam = isMuted ? 1 : 0;
+            
+            iframeElement.src = `https://www.youtube.com/embed/${chosenId}?autoplay=1&mute=${muteParam}&loop=1&playlist=${chosenId}&controls=0&modestbranding=1&disablekb=1&fs=0&enablejsapi=1&origin=${encodeURIComponent(window.location.origin)}`;
         }
 
-        // Initial assignment with slight staggering
-        playRandomYouTubeDistinct(f3, pool3, f4);
-        setTimeout(() => {
-            playRandomYouTubeDistinct(f4, pool4, f3);
-        }, 400);
+        // Trigger Frame 3 and Frame 4 at the exact same split-second
+        playRandomYouTubeDistinct(f3, pool3, f4, true);  // Frame 3 is muted
+        playRandomYouTubeDistinct(f4, pool4, f3, false); // Frame 4 is UNMUTED
+
+        // Function to ensure audio unlocks if browser blocks unmuted autoplay initially
+        function unlockAudio() {
+            // Reloads Frame 4 unmuted on first click if browser restricted it
+            let currentSrc = f4.src;
+            if (currentSrc && currentSrc.includes('mute=1')) {
+                f4.src = currentSrc.replace('mute=1', 'mute=0');
+            }
+        }
 
         // --- LIVE CLOCK & TICKER SCRIPT ---
         function updateClock() {
