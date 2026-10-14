@@ -163,7 +163,7 @@
 
     <!-- Audio Unlock & Start Overlay -->
     <div id="start-overlay">
-        <h2>PHRMDO WAITING LOUNGE DISPLAY</h2>
+        <h2>PHRMDO WAITING LOUNGE</h2>
         <p>▶ CLICK HERE OR PRESS OK TO START DISPLAY WITH SOUND</p>
     </div>
 
@@ -171,7 +171,7 @@
     <header>
         <div class="header-left">
             <h1>PHRMDO WAITING LOUNGE</h1>
-            <p>Provincial Information & Visitor Display System</p>
+            <p>Provincial Human Resource Management and Development Office</p>
         </div>
         <div class="header-right" id="clock">
             Loading Date & Time...
@@ -237,7 +237,7 @@
             let choices4 = pool4.filter(id => id !== id3);
             const id4 = choices4[Math.floor(Math.random() * choices4.length)] || pool4[0];
 
-            // --- FIRE ALL IFRAME REQUESTS SIMULTANEOUSLY ---
+            // --- FIRE IFRAME REQUESTS ---
             const originParam = encodeURIComponent(window.location.origin);
 
             document.getElementById('webLinkFrame').src = targetWebLink;
@@ -246,8 +246,10 @@
             document.getElementById('vid2Frame').src = `https://www.youtube.com/embed/${id2}?autoplay=1&mute=1&loop=1&playlist=${id2}&controls=0&modestbranding=1&disablekb=1&fs=0&enablejsapi=1&origin=${originParam}`;
             document.getElementById('vid3Frame').src = `https://www.youtube.com/embed/${id3}?autoplay=1&mute=1&loop=1&playlist=${id3}&controls=0&modestbranding=1&disablekb=1&fs=0&enablejsapi=1&origin=${originParam}`;
             
-            // Frame 4 UNMUTED (mute=0)
-            document.getElementById('vid4Frame').src = `https://www.youtube.com/embed/${id4}?autoplay=1&mute=0&loop=1&playlist=${id4}&controls=0&modestbranding=1&disablekb=1&fs=0&enablejsapi=1&origin=${originParam}`;
+            // Frame 4 UNMUTED (mute=0 with a tiny staggered push for TV audio engine stability)
+            setTimeout(() => {
+                document.getElementById('vid4Frame').src = `https://www.youtube.com/embed/${id4}?autoplay=1&mute=0&loop=1&playlist=${id4}&controls=0&modestbranding=1&disablekb=1&fs=0&enablejsapi=1&origin=${originParam}`;
+            }, 200);
 
             document.getElementById('vid3Frame').setAttribute('data-current-id', id3);
             document.getElementById('vid4Frame').setAttribute('data-current-id', id4);
