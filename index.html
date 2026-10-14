@@ -22,6 +22,39 @@
             flex-direction: column;
         }
 
+        /* Click-to-Start Audio Unlock Overlay */
+        #start-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.85);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            cursor: pointer;
+            transition: opacity 0.5s ease;
+        }
+
+        #start-overlay h2 {
+            font-size: 32px;
+            color: #00dcff;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        #start-overlay p {
+            font-size: 18px;
+            color: #cccccc;
+            background: #008cff;
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-weight: bold;
+        }
+
         /* Header Banner */
         header {
             height: 90px;
@@ -126,13 +159,19 @@
         }
     </style>
 </head>
-<body onclick="unlockAudio()">
+<body onclick="startDisplay()">
+
+    <!-- Audio Unlock & Start Overlay -->
+    <div id="start-overlay">
+        <h2>PHRMDO WAITING LOUNGE DISPLAY</h2>
+        <p>▶ CLICK HERE OR PRESS OK TO START DISPLAY WITH SOUND</p>
+    </div>
 
     <!-- Header Banner -->
     <header>
         <div class="header-left">
             <h1>PHRMDO WAITING LOUNGE</h1>
-            <p>Provincial Human Resource Management and Development Office</p>
+            <p>Provincial Information & Visitor Display System</p>
         </div>
         <div class="header-right" id="clock">
             Loading Date & Time...
@@ -155,11 +194,11 @@
 
             <!-- Bottom Right Quarter Split -->
             <div class="bottom-right-row">
-                <!-- Frame 3 -->
+                <!-- Frame 3 (Muted) -->
                 <div class="bottom-right-box">
                     <iframe id="vid3Frame" src="" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"></iframe>
                 </div>
-                <!-- Frame 4 -->
+                <!-- Frame 4 (UNMUTED) -->
                 <div class="bottom-right-box">
                     <iframe id="vid4Frame" src="" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"></iframe>
                 </div>
@@ -175,40 +214,43 @@
     </footer>
 
     <script>
-        // --- 1. CONFIGURATION POOLS ---
-        const targetWebLink = "https://citizenscharter.launion.gov.ph/billboard/25?mode=tv";
-        const id2 = "eGIry6EOY6Y"; // Frame 2 Video ID
+        let displayStarted = false;
 
-        const pool3 = ["tg5aaNzgFxI", "1HWRXTmSmbQ"];
-        const pool4 = ["1HWRXTmSmbQ", "tg5aaNzgFxI"];
+        function startDisplay() {
+            if (displayStarted) return;
+            displayStarted = true;
 
-        // --- 2. PRE-CALCULATE DISTINCT RANDOM VIDEOS FOR 3 & 4 ---
-        const id3 = pool3[Math.floor(Math.random() * pool3.length)];
-        let choices4 = pool4.filter(id => id !== id3);
-        const id4 = choices4[Math.floor(Math.random() * choices4.length)] || pool4[0];
+            // Hide the overlay smoothly
+            let overlay = document.getElementById('start-overlay');
+            overlay.style.opacity = '0';
+            setTimeout(() => overlay.style.display = 'none', 500);
 
-        // --- 3. FIRE ALL IFRAME REQUESTS SIMULTANEOUSLY ---
-        const originParam = encodeURIComponent(window.location.origin);
+            // --- CONFIGURATION POOLS ---
+            const targetWebLink = "https://citizenscharter.launion.gov.ph/billboard/25?mode=tv";
+            const id2 = "eGIry6EOY6Y"; // Frame 2 Video ID
 
-        document.getElementById('webLinkFrame').src = targetWebLink;
-        
-        document.getElementById('vid2Frame').src = `https://www.youtube.com/embed/${id2}?autoplay=1&mute=1&loop=1&playlist=${id2}&controls=0&modestbranding=1&disablekb=1&fs=0&enablejsapi=1&origin=${originParam}`;
-        
-        document.getElementById('vid3Frame').src = `https://www.youtube.com/embed/${id3}?autoplay=1&mute=1&loop=1&playlist=${id3}&controls=0&modestbranding=1&disablekb=1&fs=0&enablejsapi=1&origin=${originParam}`;
-        
-        document.getElementById('vid4Frame').src = `https://www.youtube.com/embed/${id4}?autoplay=1&mute=0&loop=1&playlist=${id4}&controls=0&modestbranding=1&disablekb=1&fs=0&enablejsapi=1&origin=${originParam}`;
+            const pool3 = ["tg5aaNzgFxI", "1HWRXTmSmbQ"];
+            const pool4 = ["1HWRXTmSmbQ", "tg5aaNzgFxI"];
 
-        // Save current IDs for tracking if needed
-        document.getElementById('vid3Frame').setAttribute('data-current-id', id3);
-        document.getElementById('vid4Frame').setAttribute('data-current-id', id4);
+            // --- PRE-CALCULATE DISTINCT RANDOM VIDEOS FOR 3 & 4 ---
+            const id3 = pool3[Math.floor(Math.random() * pool3.length)];
+            let choices4 = pool4.filter(id => id !== id3);
+            const id4 = choices4[Math.floor(Math.random() * choices4.length)] || pool4[0];
 
-        // --- AUDIO UNLOCK HELPER ---
-        function unlockAudio() {
-            let f4 = document.getElementById('vid4Frame');
-            let currentSrc = f4.src;
-            if (currentSrc && currentSrc.includes('mute=1')) {
-                f4.src = currentSrc.replace('mute=1', 'mute=0');
-            }
+            // --- FIRE ALL IFRAME REQUESTS SIMULTANEOUSLY ---
+            const originParam = encodeURIComponent(window.location.origin);
+
+            document.getElementById('webLinkFrame').src = targetWebLink;
+            
+            // Frame 2 & 3 Muted
+            document.getElementById('vid2Frame').src = `https://www.youtube.com/embed/${id2}?autoplay=1&mute=1&loop=1&playlist=${id2}&controls=0&modestbranding=1&disablekb=1&fs=0&enablejsapi=1&origin=${originParam}`;
+            document.getElementById('vid3Frame').src = `https://www.youtube.com/embed/${id3}?autoplay=1&mute=1&loop=1&playlist=${id3}&controls=0&modestbranding=1&disablekb=1&fs=0&enablejsapi=1&origin=${originParam}`;
+            
+            // Frame 4 UNMUTED (mute=0)
+            document.getElementById('vid4Frame').src = `https://www.youtube.com/embed/${id4}?autoplay=1&mute=0&loop=1&playlist=${id4}&controls=0&modestbranding=1&disablekb=1&fs=0&enablejsapi=1&origin=${originParam}`;
+
+            document.getElementById('vid3Frame').setAttribute('data-current-id', id3);
+            document.getElementById('vid4Frame').setAttribute('data-current-id', id4);
         }
 
         // --- LIVE CLOCK & TICKER SCRIPT ---
