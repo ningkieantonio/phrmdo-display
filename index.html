@@ -229,31 +229,7 @@
             const targetWebLink = "https://citizenscharter.launion.gov.ph/billboard/25?mode=tv";
             const id2 = "eGIry6EOY6Y"; // Frame 2 Video ID
 
-        
-
-            // --- PRE-CALCULATE DISTINCT RANDOM VIDEOS FOR 3 & 4 ---
-            const id3 = pool3[Math.floor(Math.random() * pool3.length)];
-            let choices4 = pool4.filter(id => id !== id3);
-            const id4 = choices4[Math.floor(Math.random() * choices4.length)] || pool4[0];
-
-            // --- FIRE IFRAME REQUESTS ---
-            const originParam = encodeURIComponent(window.location.origin);
-
-            document.getElementById('webLinkFrame').src = targetWebLink;
-            
-            // Frame 2 & 3 Muted
-            document.getElementById('vid2Frame').src = `https://www.youtube.com/embed/${id2}?autoplay=1&mute=1&loop=1&playlist=${id2}&controls=0&modestbranding=1&disablekb=1&fs=0&enablejsapi=1&origin=${originParam}`;
-            document.getElementById('vid3Frame').src = `https://www.youtube.com/embed/${id3}?autoplay=1&mute=1&loop=1&playlist=${id3}&controls=0&modestbranding=1&disablekb=1&fs=0&enablejsapi=1&origin=${originParam}`;
-            
-            // Frame 4 UNMUTED (mute=0 with a tiny staggered push for TV audio engine stability)
-            setTimeout(() => {
-                document.getElementById('vid4Frame').src = `https://www.youtube.com/embed/${id4}?autoplay=1&mute=0&loop=1&playlist=${id4}&controls=0&modestbranding=1&disablekb=1&fs=0&enablejsapi=1&origin=${originParam}`;
-            }, 200);
-
-            document.getElementById('vid3Frame').setAttribute('data-current-id', id3);
-            document.getElementById('vid4Frame').setAttribute('data-current-id', id4);
-        }
-
+                
         // --- LIVE CLOCK & TICKER SCRIPT ---
         function updateClock() {
             const now = new Date();
