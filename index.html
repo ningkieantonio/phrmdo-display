@@ -93,13 +93,19 @@
             object-fit: cover;
         }
 
-        /* Fixed Frame 1: Scaled to 0.62 (62%) to fit TV browser layout */
-        .left-box iframe {
-            width: 161%;   /* Compensates for 62% scaling (100 / 0.62) */
-            height: 161%;  /* Compensates for 62% scaling */
+        /* General iframe styling for web links */
+        iframe {
+            width: 100%;
+            height: 100%;
             border: none;
             background: #ffffff;
-            transform: scale(0.62); /* Scaled to 62% */
+        }
+
+        /* Fixed Frame 1: Scaled to 0.62 (62%) to fit TV browser layout */
+        .left-box iframe {
+            width: 161%;   
+            height: 161%;  
+            transform: scale(0.62); 
             transform-origin: top left;
         }
 
@@ -130,7 +136,7 @@
     <header>
         <div class="header-left">
             <h1>PHRMDO WAITING LOUNGE</h1>
-            <p>Provincial Information & Visitor Display System</p>
+            <p>Provincial Human Resource Management and Development Office</p>
         </div>
         <div class="header-right" id="clock">
             Loading Date & Time...
@@ -146,9 +152,9 @@
 
         <!-- Right Side Container -->
         <div class="right-container">
-            <!-- Frame 2: Top Right (Catbox Direct Link for Video 2) -->
+            <!-- Frame 2: Top Right (YouTube Embedded Video Player) -->
             <div class="top-right-box">
-                <video id="vid2" autoplay muted loop></video>
+                <iframe id="vid2Frame" src="" allow="autoplay; encrypted-media" allowfullscreen></iframe>
             </div>
 
             <!-- Bottom Right Quarter Split (Frames 3 & 4 - Distinct Random Playback) -->
@@ -174,36 +180,31 @@
         // --- 1. CONFIGURE FRAME 1 WEB LINK ---
         const targetWebLink = "https://citizenscharter.launion.gov.ph/billboard/25?mode=tv";
 
-        // --- 2. CONFIGURE FRAME 2 VIDEO (Catbox Direct Link) ---
-        const video2List = ["https://files.catbox.moe/jvgp32.mp4"]; 
+        // --- 2. CONFIGURE FRAME 2 YOUTUBE LINK ---
+        const targetVid2YouTube = "https://www.youtube.com/embed/eGIry6EOY6Y?autoplay=1&mute=1&loop=1&playlist=eGIry6EOY6Y";
 
         // --- 3. CONFIGURE FRAMES 3 & 4 RANDOM POOL ---
         const folder3 = [
-            "https://lh3.googleusercontent.com/d/1dle9BGVywx6zrQGC_v35CwTYVCSK7Ts6", // 3.mp4
-            "https://lh3.googleusercontent.com/d/1_xQnOcIvBOgaqJHspvcJTHdkdw3lykFO", // 4.mp4
-            "https://lh3.googleusercontent.com/d/1BbndEV2kOtf9w5bItILmMtz7ig0U9jPp", // 5.mp4
-            "https://lh3.googleusercontent.com/d/15lIOfz2g7Vyi_tPHKDrdof9taYrpdhfC", // 6.mp4
-            "https://lh3.googleusercontent.com/d/1ps-2jpsdkhBhnGo4S0_av6Tr8pybrV9g", // 7.mp4
-            "https://lh3.googleusercontent.com/d/13mOcwKlwWA_BUZoSQsdTPObg0W2Q5KYL"  // 8.mp4
+            "https://lh3.googleusercontent.com/d/1dle9BGVywx6zrQGC_v35CwTYVCSK7Ts6",
+            "https://lh3.googleusercontent.com/d/1_xQnOcIvBOgaqJHspvcJTHdkdw3lykFO",
+            "https://lh3.googleusercontent.com/d/1BbndEV2kOtf9w5bItILmMtz7ig0U9jPp",
+            "https://lh3.googleusercontent.com/d/15lIOfz2g7Vyi_tPHKDrdof9taYrpdhfC",
+            "https://lh3.googleusercontent.com/d/1ps-2jpsdkhBhnGo4S0_av6Tr8pybrV9g",
+            "https://lh3.googleusercontent.com/d/13mOcwKlwWA_BUZoSQsdTPObg0W2Q5KYL"
         ]; 
 
         const folder4 = [
-            "https://lh3.googleusercontent.com/d/1dle9BGVywx6zrQGC_v35CwTYVCSK7Ts6", // 3.mp4
-            "https://lh3.googleusercontent.com/d/1_xQnOcIvBOgaqJHspvcJTHdkdw3lykFO", // 4.mp4
-            "https://lh3.googleusercontent.com/d/1BbndEV2kOtf9w5bItILmMtz7ig0U9jPp", // 5.mp4
-            "https://lh3.googleusercontent.com/d/15lIOfz2g7Vyi_tPHKDrdof9taYrpdhfC", // 6.mp4
-            "https://lh3.googleusercontent.com/d/1ps-2jpsdkhBhnGo4S0_av6Tr8pybrV9g", // 7.mp4
-            "https://lh3.googleusercontent.com/d/13mOcwKlwWA_BUZoSQsdTPObg0W2Q5KYL"  // 8.mp4
+            "https://lh3.googleusercontent.com/d/1dle9BGVywx6zrQGC_v35CwTYVCSK7Ts6",
+            "https://lh3.googleusercontent.com/d/1_xQnOcIvBOgaqJHspvcJTHdkdw3lykFO",
+            "https://lh3.googleusercontent.com/d/1BbndEV2kOtf9w5bItILmMtz7ig0U9jPp",
+            "https://lh3.googleusercontent.com/d/15lIOfz2g7Vyi_tPHKDrdof9taYrpdhfC",
+            "https://lh3.googleusercontent.com/d/1ps-2jpsdkhBhnGo4S0_av6Tr8pybrV9g",
+            "https://lh3.googleusercontent.com/d/13mOcwKlwWA_BUZoSQsdTPObg0W2Q5KYL"
         ];
 
-        // --- SETUP FRAME 1 (Billboard Web Link) ---
+        // --- SETUP FRAMES 1 & 2 (Web Links) ---
         document.getElementById('webLinkFrame').src = targetWebLink;
-
-        // --- SETUP FRAME 2 (Forced Muted Loop Video) ---
-        const v2 = document.getElementById('vid2');
-        v2.muted = true;
-        v2.src = video2List[0];
-        v2.play().catch(e => console.log("Vid 2 playback error:", e));
+        document.getElementById('vid2Frame').src = targetVid2YouTube;
 
         // --- SETUP FRAMES 3 & 4 ---
         const v3 = document.getElementById('vid3');
@@ -241,16 +242,6 @@
         setTimeout(() => {
             playRandomDistinct(v4, folder4, v3);
         }, 300);
-
-        // --- AUTO-UNLOCK TRICK FOR TV BROWSERS ---
-        window.addEventListener('load', () => {
-            setTimeout(() => {
-                document.querySelectorAll('video').forEach(vid => {
-                    vid.muted = true;
-                    vid.play().catch(err => console.log("Force play retry:", err));
-                });
-            }, 1000);
-        });
 
         // --- LIVE CLOCK & TICKER SCRIPT ---
         function updateClock() {
