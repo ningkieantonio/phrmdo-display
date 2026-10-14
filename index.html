@@ -87,18 +87,13 @@
             height: 100%;
         }
 
-        video {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        /* General iframe styling for web links */
+        /* General iframe styling for web links & YouTube players */
         iframe {
             width: 100%;
             height: 100%;
             border: none;
-            background: #ffffff;
+            background: #000000;
+            pointer-events: none; /* Disables clicking so controls don't pop up */
         }
 
         /* Fixed Frame 1: Scaled to 0.62 (62%) to fit TV browser layout */
@@ -107,13 +102,7 @@
             height: 161%;  
             transform: scale(0.62); 
             transform-origin: top left;
-        }
-
-        /* Frame 2 YouTube Zoom trick: slightly zooms in to cut off remaining borders if needed */
-        .top-right-box iframe {
-            width: 100%;
-            height: 100%;
-            pointer-events: none; /* Disables clicking so controls don't accidentally pop up */
+            pointer-events: auto; /* Keeps billboard interactive */
         }
 
         /* Footer Ticker Bar */
@@ -143,7 +132,7 @@
     <header>
         <div class="header-left">
             <h1>PHRMDO WAITING LOUNGE</h1>
-            <p>Provincial Information & Visitor Display System</p>
+            <p>Provincial Human Resource Management and Development Office</p>
         </div>
         <div class="header-right" id="clock">
             Loading Date & Time...
@@ -164,13 +153,13 @@
                 <iframe id="vid2Frame" src="" allow="autoplay; encrypted-media"></iframe>
             </div>
 
-            <!-- Bottom Right Quarter Split (Frames 3 & 4 - Distinct Random Playback) -->
+            <!-- Bottom Right Quarter Split (Frames 3 & 4 - Distinct YouTube Playback) -->
             <div class="bottom-right-row">
                 <div class="bottom-right-box">
-                    <video id="vid3" autoplay muted></video>
+                    <iframe id="vid3Frame" src="" allow="autoplay; encrypted-media"></iframe>
                 </div>
                 <div class="bottom-right-box">
-                    <video id="vid4" autoplay muted></video>
+                    <iframe id="vid4Frame" src="" allow="autoplay; encrypted-media"></iframe>
                 </div>
             </div>
         </div>
@@ -190,56 +179,48 @@
         // --- 2. CONFIGURE FRAME 2 YOUTUBE LINK (Clean Mode - No Controls) ---
         const targetVid2YouTube = "https://www.youtube.com/embed/eGIry6EOY6Y?autoplay=1&mute=1&loop=1&playlist=eGIry6EOY6Y&controls=0&modestbranding=1&disablekb=1&fs=0";
 
-        // --- 3. CONFIGURE FRAMES 3 & 4 RANDOM POOL ---
-        const folder3 = [
-            "https://www.youtube.com/watch?v=1HWRXTmSmbQ",
-     
+        // --- 3. CONFIGURE YOUTUBE POOLS FOR FRAMES 3 & 4 ---
+        // Using YouTube Video IDs extracted from your links:
+        // https://youtu.be/tg5aaNzgFxI -> tg5aaNzgFxI
+        // https://youtu.be/1HWRXTmSmbQ -> 1HWRXTmSmbQ
+        const pool3 = [
+            "tg5aaNzgFxI",
+            "1HWRXTmSmbQ"
         ]; 
 
-        const folder4 = [
-            "https://www.youtube.com/watch?v=tg5aaNzgFxI",
-
+        const pool4 = [
+            "1HWRXTmSmbQ",
+            "tg5aaNzgFxI"
         ];
 
-        // --- SETUP FRAMES 1 & 2 (Web Links) ---
+        // --- SETUP FRAMES 1 & 2 ---
         document.getElementById('webLinkFrame').src = targetWebLink;
         document.getElementById('vid2Frame').src = targetVid2YouTube;
 
-        // --- SETUP FRAMES 3 & 4 ---
-        const v3 = document.getElementById('vid3');
-        const v4 = document.getElementById('vid4');
-        v3.muted = true;
-        v4.muted = true;
+        // --- SETUP FRAMES 3 & 4 (Distinct Random YouTube Playback) ---
+        const f3 = document.getElementById('vid3Frame');
+        const f4 = document.getElementById('vid4Frame');
 
-        function playRandomDistinct(videoElement, folderArray, otherVideoElement) {
-            if (folderArray.length === 0) return;
+        function playRandomYouTubeDistinct(iframeElement, poolArray, otherIframeElement) {
+            if (poolArray.length === 0) return;
 
-            let otherSrc = otherVideoElement.getAttribute('data-current-file');
-            let availableChoices = folderArray;
-            if (folderArray.length > 1 && otherSrc) {
-                availableChoices = folderArray.filter(file => file !== otherSrc);
+            let otherSrc = otherIframeElement.getAttribute('data-current-id');
+            let availableChoices = poolArray;
+            if (poolArray.length > 1 && otherSrc) {
+                availableChoices = poolArray.filter(id => id !== otherSrc);
             }
 
             const randomIndex = Math.floor(Math.random() * availableChoices.length);
-            const chosenFile = availableChoices[randomIndex];
+            const chosenId = availableChoices[randomIndex];
 
-            videoElement.setAttribute('data-current-file', chosenFile);
-            videoElement.src = chosenFile;
-            videoElement.load();
-            let playPromise = videoElement.play();
-            if (playPromise !== undefined) {
-                playPromise.catch(error => {
-                    console.log("Autoplay error for Frame 3/4:", error);
-                });
-            }
+            iframeElement.setAttribute('data-current-id', chosenId);
+            iframeElement.src = `https://www.youtube.com/embed/${chosenId}?autoplay=1&mute=1&loop=1&playlist=${chosenId}&controls=0&modestbranding=1&disablekb=1&fs=0`;
         }
 
-        v3.addEventListener('ended', () => playRandomDistinct(v3, folder3, v4));
-        v4.addEventListener('ended', () => playRandomDistinct(v4, folder4, v3));
-
-        playRandomDistinct(v3, folder3, v4);
+        // Initial assignment
+        playRandomYouTubeDistinct(f3, pool3, f4);
         setTimeout(() => {
-            playRandomDistinct(v4, folder4, v3);
+            playRandomYouTubeDistinct(f4, pool4, f3);
         }, 300);
 
         // --- LIVE CLOCK & TICKER SCRIPT ---
