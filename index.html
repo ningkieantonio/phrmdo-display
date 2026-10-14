@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PHRMDO Waiting Lounge Display</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #141414;
+            color: white;
+            font-family: Arial, sans-serif;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header Banner */
+        header {
+            height: 90px;
+            background-color: #231e19;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 30px;
+            border-bottom: 2px solid #008cff;
+        }
+
+        .header-left h1 {
+            font-size: 28px;
+            font-weight: bold;
+            letter-spacing: 1px;
+            color: #ffffff;
+        }
+
+        .header-left p {
+            font-size: 14px;
+            color: #b4b4b4;
+            margin-top: 4px;
+        }
+
+        .header-right {
+            font-size: 22px;
+            font-weight: bold;
+            color: #00dcff;
+        }
+
+        /* Main Custom Layout Grid Container */
+        .grid-container {
+            flex: 1;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+            background-color: #282828;
+            overflow: hidden;
+        }
+
+        .left-box, .top-right-box, .bottom-right-box {
+            background: black;
+            width: 100%;
+            height: 100%;
+        }
+
+        .right-container {
+            display: grid;
+            grid-template-rows: 1fr 1fr;
+            gap: 6px;
+            background-color: #282828;
+            height: 100%;
+        }
+
+        .bottom-right-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+            background-color: #282828;
+            width: 100%;
+            height: 100%;
+        }
+
+        video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* Web Link / Billboard iframe styling */
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            background: #ffffff;
+        }
+
+        /* Footer Ticker Bar */
+        footer {
+            height: 50px;
+            background-color: #141414;
+            border-top: 3px solid #008cff;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+        }
+
+        .ticker-text {
+            position: absolute;
+            white-space: nowrap;
+            font-size: 18px;
+            font-weight: bold;
+            color: #e6e6e6;
+            will-change: transform;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header Banner -->
+    <header>
+        <div class="header-left">
+            <h1>PHRMDO WAITING LOUNGE</h1>
+            <p>Provincial Information & Visitor Display System</p>
+        </div>
+        <div class="header-right" id="clock">
+            Loading Date & Time...
+        </div>
+    </header>
+
+    <!-- Custom Display Grid Layout -->
+    <div class="grid-container">
+        <!-- Frame 1: Left Half (La Union Billboard Web Link) -->
+        <div class="left-box">
+            <iframe id="webLinkFrame" src="" allow="autoplay; encrypted-media"></iframe>
+        </div>
+
+        <!-- Right Side Container -->
+        <div class="right-container">
+            <!-- Frame 2: Top Right (Infinite Loop Video 2.mp4) -->
+            <div class="top-right-box">
+                <video id="vid2" autoplay muted loop></video>
+            </div>
+
+            <!-- Bottom Right Quarter Split (Frames 3 & 4 - Distinct Random Playback for 3.mp4 to 8.mp4) -->
+            <div class="bottom-right-row">
+                <div class="bottom-right-box">
+                    <video id="vid3" autoplay muted></video>
+                </div>
+                <div class="bottom-right-box">
+                    <video id="vid4" autoplay muted></video>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer Ticker -->
+    <footer>
+        <div class="ticker-text" id="ticker">
+            &nbsp;|&nbsp; WELCOME TO THE PROVINCIAL HUMAN RESOURCE MANAGEMENT AND DEVELOPMENT OFFICE! &nbsp;|&nbsp; Please make yourself comfortable while waiting for your name to be called. In the meantime, kindly watch our ISO procedures video. &nbsp;|&nbsp; Thank you for your patience! &nbsp;|&nbsp;
+        </div>
+    </footer>
+
+    <script>
+        // --- 1. CONFIGURE FRAME 1 WEB LINK ---
+        const targetWebLink = "https://citizenscharter.launion.gov.ph/billboard/25?mode=tv";
+
+        // --- 2. CONFIGURE FRAME 2 VIDEO (Fixed to Direct Stream Link) ---
+        const video2List = ["https://drive.google.com/drive/folders/1LyWV8WqXjiuBqQP2QsP-fKwOBsRsHN9p"]; 
+
+        // --- 3. CONFIGURE FRAMES 3 & 4 RANDOM POOL (3.mp4 to 8.mp4 Direct Stream Links) ---
+        const folder3 = [
+            "https://lh3.googleusercontent.com/d/1dle9BGVywx6zrQGC_v35CwTYVCSK7Ts6", // 3.mp4
+            "https://lh3.googleusercontent.com/d/1_xQnOcIvBOgaqJHspvcJTHdkdw3lykFO", // 4.mp4
+            "https://lh3.googleusercontent.com/d/1BbndEV2kOtf9w5bItILmMtz7ig0U9jPp", // 5.mp4
+            "https://lh3.googleusercontent.com/d/15lIOfz2g7Vyi_tPHKDrdof9taYrpdhfC", // 6.mp4
+            "https://lh3.googleusercontent.com/d/1ps-2jpsdkhBhnGo4S0_av6Tr8pybrV9g", // 7.mp4
+            "https://lh3.googleusercontent.com/d/13mOcwKlwWA_BUZoSQsdTPObg0W2Q5KYL"  // 8.mp4
+        ]; 
+
+        const folder4 = [
+            "https://lh3.googleusercontent.com/d/1dle9BGVywx6zrQGC_v35CwTYVCSK7Ts6", // 3.mp4
+            "https://lh3.googleusercontent.com/d/1_xQnOcIvBOgaqJHspvcJTHdkdw3lykFO", // 4.mp4
+            "https://lh3.googleusercontent.com/d/1BbndEV2kOtf9w5bItILmMtz7ig0U9jPp", // 5.mp4
+            "https://lh3.googleusercontent.com/d/15lIOfz2g7Vyi_tPHKDrdof9taYrpdhfC", // 6.mp4
+            "https://lh3.googleusercontent.com/d/1ps-2jpsdkhBhnGo4S0_av6Tr8pybrV9g", // 7.mp4
+            "https://lh3.googleusercontent.com/d/13mOcwKlwWA_BUZoSQsdTPObg0W2Q5KYL"  // 8.mp4
+        ];
+
+        // --- SETUP FRAME 1 (Billboard Web Link) ---
+        document.getElementById('webLinkFrame').src = targetWebLink;
+
+        // --- SETUP FRAME 2 (Infinite Loop Video) ---
+        const v2 = document.getElementById('vid2');
+        v2.src = video2List[0];
+        v2.play().catch(e => console.log("Vid 2 error:", e));
+
+        // --- SETUP FRAMES 3 & 4 (Distinct Random Playback) ---
+        const v3 = document.getElementById('vid3');
+        const v4 = document.getElementById('vid4');
+
+        function playRandomDistinct(videoElement, folderArray, otherVideoElement) {
+            if (folderArray.length === 0) return;
+
+            let otherSrc = otherVideoElement.getAttribute('data-current-file');
+            let availableChoices = folderArray;
+            if (folderArray.length > 1 && otherSrc) {
+                availableChoices = folderArray.filter(file => file !== otherSrc);
+            }
+
+            const randomIndex = Math.floor(Math.random() * availableChoices.length);
+            const chosenFile = availableChoices[randomIndex];
+
+            videoElement.setAttribute('data-current-file', chosenFile);
+            videoElement.src = chosenFile;
+            videoElement.load();
+            let playPromise = videoElement.play();
+            if (playPromise !== undefined) {
+                playPromise.catch(error => {
+                    console.log("Autoplay error:", error);
+                });
+            }
+        }
+
+        v3.addEventListener('ended', () => playRandomDistinct(v3, folder3, v4));
+        v4.addEventListener('ended', () => playRandomDistinct(v4, folder4, v3));
+
+        playRandomDistinct(v3, folder3, v4);
+        setTimeout(() => {
+            playRandomDistinct(v4, folder4, v3);
+        }, 300);
+
+        // --- LIVE CLOCK & TICKER SCRIPT ---
+        function updateClock() {
+            const now = new Date();
+            const options = { month: 'long', day: 'numeric', year: 'numeric' };
+            const dateStr = now.toLocaleDateString('en-US', options);
+            const timeStr = now.toLocaleTimeString('en-US');
+            document.getElementById('clock').innerText = `${dateStr}  |  ${timeStr}`;
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        const ticker = document.getElementById('ticker');
+        let tickerPos = window.innerWidth;
+        
+        function scrollTicker() {
+            tickerPos -= 3;
+            if (tickerPos < -ticker.offsetWidth) {
+                tickerPos = window.innerWidth;
+            }
+            ticker.style.transform = `translateX(${tickerPos}px)`;
+            requestAnimationFrame(scrollTicker);
+        }
+        scrollTicker();
+    </script>
+</body>
+</html>
