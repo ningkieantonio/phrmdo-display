@@ -146,7 +146,7 @@
 
         <!-- Right Side Container -->
         <div class="right-container">
-            <!-- Frame 2: Top Right (Infinite Loop Video 2 via Catbox) -->
+            <!-- Frame 2: Top Right (Catbox Direct Link for Video 2) -->
             <div class="top-right-box">
                 <video id="vid2" autoplay muted loop></video>
             </div>
@@ -177,8 +177,7 @@
         // --- 2. CONFIGURE FRAME 2 VIDEO (Catbox Direct Link) ---
         const video2List = ["https://files.catbox.moe/jvgp32.mp4"]; 
 
-        // --- 3. CONFIGURE FRAMES 3 & 4 RANDOM POOL (3.mp4 to 8.mp4 Direct Stream Links) ---
-        // (Once you upload videos 3 to 8 to Catbox, replace these Google Drive links with your new Catbox links)
+        // --- 3. CONFIGURE FRAMES 3 & 4 RANDOM POOL ---
         const folder3 = [
             "https://lh3.googleusercontent.com/d/1dle9BGVywx6zrQGC_v35CwTYVCSK7Ts6", // 3.mp4
             "https://lh3.googleusercontent.com/d/1_xQnOcIvBOgaqJHspvcJTHdkdw3lykFO", // 4.mp4
@@ -200,14 +199,17 @@
         // --- SETUP FRAME 1 (Billboard Web Link) ---
         document.getElementById('webLinkFrame').src = targetWebLink;
 
-        // --- SETUP FRAME 2 (Infinite Loop Video) ---
+        // --- SETUP FRAME 2 (Forced Muted Loop Video) ---
         const v2 = document.getElementById('vid2');
+        v2.muted = true;
         v2.src = video2List[0];
-        v2.play().catch(e => console.log("Vid 2 error:", e));
+        v2.play().catch(e => console.log("Vid 2 playback error:", e));
 
-        // --- SETUP FRAMES 3 & 4 (Distinct Random Playback) ---
+        // --- SETUP FRAMES 3 & 4 ---
         const v3 = document.getElementById('vid3');
         const v4 = document.getElementById('vid4');
+        v3.muted = true;
+        v4.muted = true;
 
         function playRandomDistinct(videoElement, folderArray, otherVideoElement) {
             if (folderArray.length === 0) return;
@@ -227,7 +229,7 @@
             let playPromise = videoElement.play();
             if (playPromise !== undefined) {
                 playPromise.catch(error => {
-                    console.log("Autoplay error:", error);
+                    console.log("Autoplay error for Frame 3/4:", error);
                 });
             }
         }
@@ -239,6 +241,16 @@
         setTimeout(() => {
             playRandomDistinct(v4, folder4, v3);
         }, 300);
+
+        // --- AUTO-UNLOCK TRICK FOR TV BROWSERS ---
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                document.querySelectorAll('video').forEach(vid => {
+                    vid.muted = true;
+                    vid.play().catch(err => console.log("Force play retry:", err));
+                });
+            }, 1000);
+        });
 
         // --- LIVE CLOCK & TICKER SCRIPT ---
         function updateClock() {
