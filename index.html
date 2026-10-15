@@ -182,14 +182,24 @@
         // --- 3. CONFIGURE FRAME 3 YOUTUBE EMBED (Manual Input, autoplay + mute + loop) ---
         const targetVid3YouTube = "https://www.youtube.com/embed/tg5aaNzgFxI?autoplay=1&mute=1&loop=1&playlist=tg5aaNzgFxI&controls=1&rel=0";
 
-        // --- 4. CONFIGURE FRAME 4 YOUTUBE EMBED (Manual Input, autoplay + mute + loop) ---
-        const targetVid4YouTube = "https://www.youtube.com/embed/nlf8lSZYI7g?autoplay=1&mute=1&loop=1&playlist=nlf8lSZYI7g&controls=1&rel=0";
+        // --- 4. FRAME 4: RANDOM DRIVE VIDEO (3.mp4 - 8.mp4, Google Drive folder "VID3-8") ---
+        // A random video is picked on every page load. Note: Google's player
+        // cannot autoplay, so one remote press starts it (with sound).
+        const driveVideosFrame4 = [
+            "https://drive.google.com/file/d/1dle9BGVywx6zrQGC_v35CwTYVCSK7Ts6/preview", // 3.mp4
+            "https://drive.google.com/file/d/1_xQnOcIvBOgaqJHspvcJTHdkdw3lykFO/preview", // 4.mp4
+            "https://drive.google.com/file/d/1BbndEV2kOtf9w5bItILmMtz7ig0U9jPp/preview", // 5.mp4
+            "https://drive.google.com/file/d/15lIOfz2g7Vyi_tPHKDrdof9taYrpdhfC/preview", // 6.mp4
+            "https://drive.google.com/file/d/1ps-2jpsdkhBhnGo4S0_av6Tr8pybrV9g/preview", // 7.mp4
+            "https://drive.google.com/file/d/13mOcwKlwWA_BUZoSQsdTPObg0W2Q5KYL/preview"  // 8.mp4
+        ];
+        const randomDriveVideo = driveVideosFrame4[Math.floor(Math.random() * driveVideosFrame4.length)];
 
         // --- SETUP ALL FRAMES ---
         document.getElementById('webLinkFrame').src = targetWebLink;
         document.getElementById('vid2Frame').src = targetVid2YouTube;
         document.getElementById('vid3Frame').src = targetVid3YouTube;
-        document.getElementById('vid4Frame').src = targetVid4YouTube;
+        document.getElementById('vid4Frame').src = randomDriveVideo;
 
         // --- LIVE CLOCK & TICKER SCRIPT ---
         function updateClock() {
