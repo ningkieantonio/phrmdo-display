@@ -122,22 +122,6 @@
             background: #000;
         }
 
-        /* Frame 4: thin music strip - minimal space above the footer */
-        .music-strip {
-            height: 90px;
-            flex: none;
-            background: #000;
-            border-top: 2px solid #282828;
-            overflow: hidden;
-        }
-        .music-strip video {
-            width: 100%;
-            height: 100%;
-            display: block;
-            background: #000;
-            object-fit: cover;
-        }
-
         /* Footer Ticker Bar */
         footer {
             height: 50px;
@@ -191,11 +175,6 @@
                 <img id="slideshowImage" class="slideshow-img" src="" alt="PHRMDO Action Photos">
             </div>
         </div>
-    </div>
-
-    <!-- Frame 4: Thin Music Frame (plays the music link on loop) -->
-    <div class="music-strip">
-        <video id="musicVideo" loop playsinline preload="auto"></video>
     </div>
 
     <!-- Footer Ticker -->
@@ -341,44 +320,6 @@
         }
         scrollTicker();
 
-        // --- 4. THIN MUSIC FRAME: plays the music link on loop ---
-        // Put any music link below (direct MP3/video file link). The frame
-        // tries to play on page open; on the TV browser, sound starts on
-        // the first remote press (no prompt on screen). A watchdog restarts
-        // it every few seconds if the other frames knock it out.
-        var MUSIC_URL = "https://drive.google.com/uc?export=download&confirm=t&id=1sGeRStvGJ8EAwSbe8Zn8obEDYKnTMGbJ";
-        var musicVideo = document.getElementById('musicVideo');
-        musicVideo.volume = 0.8;
-        musicVideo.src = MUSIC_URL;
-
-        function tryPlayMusicVideo() {
-            try {
-                var playPromise = musicVideo.play();
-                if (playPromise && typeof playPromise.catch === 'function') {
-                    playPromise.catch(function() { /* blocked; next press retries */ });
-                }
-            } catch (e) { /* ignore; next press retries */ }
-        }
-
-        function unlockMusicVideo() {
-            tryPlayMusicVideo();
-        }
-
-        window.addEventListener('keydown', unlockMusicVideo);
-        window.addEventListener('click', unlockMusicVideo);
-        window.addEventListener('touchstart', unlockMusicVideo);
-
-        var musicLastTime = -1;
-        setInterval(function() {
-            if (musicVideo.seeking) return;
-            var t = musicVideo.currentTime;
-            if (musicVideo.paused || (musicLastTime >= 0 && t === musicLastTime)) {
-                tryPlayMusicVideo();
-            }
-            musicLastTime = t;
-        }, 4000);
-
-        tryPlayMusicVideo();
     </script>
 </body>
 </html>
