@@ -102,6 +102,18 @@
             overflow: hidden;
         }
 
+        /* Frame 2 YouTube player fills its box */
+        #ytPlayer {
+            width: 100%;
+            height: 100%;
+            background: #000;
+        }
+        #ytPlayer iframe {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
         /* General iframe styling */
         iframe {
             width: 100%;
@@ -167,7 +179,7 @@
         <div class="right-container">
             <!-- Frame 2: Top Right (YouTube Video) -->
             <div class="split-box">
-                <iframe id="rightVideoFrame" src="" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+                <div id="ytPlayer"></div>
             </div>
 
             <!-- Frame 3: Bottom Right (Action Photo Slideshow from Google Drive) -->
@@ -188,12 +200,15 @@
          on the TV browser it starts silently on the first remote press. -->
     <audio id="bgMusic" loop preload="auto"></audio>
 
+    <script src="https://www.youtube.com/iframe_api"></script>
     <script>
         // --- 1. CONFIGURE LEFT FRAME (Wider) ---
         const targetLeftVideo = "https://citizenscharter.launion.gov.ph/billboard/25?mode=tv";
 
         // --- 2. CONFIGURE TOP-RIGHT FRAME (YouTube Video) ---
-        const targetRightYouTube = "https://www.youtube.com/embed/eGIry6EOY6Y?autoplay=1&mute=1&loop=1&playlist=eGIry6EOY6Y&controls=0&modestbranding=1&rel=0&iv_load_policy=3&disablekb=1&fs=0";
+        // To show a different video, replace the video ID below in all three
+        // places (videoId, playlist). Player chrome stays hidden.
+        var YT_VIDEO_ID = "eGIry6EOY6Y";
 
         // --- 3. BOTTOM-RIGHT SLIDESHOW: photos load automatically from Google Drive ---
         // The page reads the "HR ACTION PICTURES" folder on every refresh, so any
@@ -293,7 +308,60 @@
 
         // --- SETUP FRAMES ---
         document.getElementById('leftFrame').src = targetLeftVideo;
-        document.getElementById('rightVideoFrame').src = targetRightYouTube;
+        // --- FRAME 2: YouTube player via IFrame API ---
+        // Mutes and plays on ready, restarts itself if it ever pauses or
+        // ends, and a watchdog kicks it every 5s if it's not playing.
+        // This is more forceful than embed-URL params alone.
+        var ytPlayer = null;
+        function startYtVideo() {
+            try {
+                if (ytPlayer && ytPlayer.playVideo) {
+                    ytPlayer.mute();
+                    ytPlayer.playVideo();
+                }
+            } catch (e) {}
+        }
+        function onYouTubeIframeAPIReady() {
+            ytPlayer = new YT.Player('ytPlayer', {
+                videoId: YT_VIDEO_ID,
+                playerVars: {
+                    autoplay: 1,
+                    mute: 1,
+                    loop: 1,
+                    playlist: YT_VIDEO_ID,
+                    controls: 0,
+                    modestbranding: 1,
+                    rel: 0,
+                    iv_load_policy: 3,
+                    disablekb: 1,
+                    fs: 0
+                },
+                events: {
+                    onReady: function(event) {
+                        event.target.mute();
+                        event.target.playVideo();
+                    },
+                    onStateChange: function(event) {
+                        if (event.data === YT.PlayerState.PAUSED ||
+                            event.data === YT.PlayerState.ENDED ||
+                            event.data === YT.PlayerState.CUED) {
+                            startYtVideo();
+                        }
+                    }
+                }
+            });
+        }
+        setInterval(function() {
+            try {
+                if (ytPlayer && ytPlayer.getPlayerState &&
+                    typeof YT !== 'undefined' && YT.PlayerState) {
+                    var s = ytPlayer.getPlayerState();
+                    if (s !== YT.PlayerState.PLAYING && s !== YT.PlayerState.BUFFERING) {
+                        startYtVideo();
+                    }
+                }
+            } catch (e) {}
+        }, 5000);
 
         // Start the photo slideshow (loads the folder, falls back if needed)
         loadDrivePhotos();
