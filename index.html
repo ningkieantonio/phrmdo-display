@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PHRMDO Waiting Lounge Display</title>
+    <title>PHRMDO Waiting Lounge Display - v2</title>
     <style>
         * {
             margin: 0;
@@ -52,17 +52,17 @@
             color: #00dcff;
         }
 
-        /* Main Custom Layout Grid Container */
+        /* 2-Column Layout Grid Container (Left is wider) */
         .grid-container {
             flex: 1;
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: 1.4fr 1fr;
             gap: 6px;
             background-color: #282828;
             overflow: hidden;
         }
 
-        .left-box, .top-right-box, .bottom-right-box {
+        .video-box {
             background: black;
             width: 100%;
             height: 100%;
@@ -70,39 +70,13 @@
             overflow: hidden;
         }
 
-        .right-container {
-            display: grid;
-            grid-template-rows: 1fr 1fr;
-            gap: 6px;
-            background-color: #282828;
-            height: 100%;
-        }
-
-        .bottom-right-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 6px;
-            background-color: #282828;
-            width: 100%;
-            height: 100%;
-        }
-
-        /* General iframe styling with pointer-events enabled for controls */
+        /* General iframe styling */
         iframe {
             width: 100%;
             height: 100%;
             border: none;
             background: #000000;
             pointer-events: auto;
-        }
-
-        /* Fixed Frame 1: Scaled to 0.62 (62%) to fit TV browser layout */
-        .left-box iframe {
-            width: 161%;    
-            height: 161%;   
-            transform: scale(0.62); 
-            transform-origin: top left;
-            pointer-events: auto; /* Keeps billboard interactive */
         }
 
         /* Footer Ticker Bar */
@@ -139,67 +113,38 @@
         </div>
     </header>
 
-    <!-- Custom Display Grid Layout -->
+    <!-- 2-Frame Custom Display Grid Layout -->
     <div class="grid-container">
-        <!-- Frame 1: Left Half (La Union Billboard Web Link scaled to 62%) -->
-        <div class="left-box">
-            <iframe id="webLinkFrame" src="" allow="autoplay; encrypted-media"></iframe>
+        <!-- Frame 1: Wider Left Video / Web Link -->
+        <div class="video-box">
+            <iframe id="leftFrame" src="" allow="autoplay; encrypted-media" allowfullscreen></iframe>
         </div>
 
-        <!-- Right Side Container -->
-        <div class="right-container">
-            <!-- Frame 2: Top Right (YouTube Player with Controls enabled) -->
-            <div class="top-right-box">
-                <iframe id="vid2Frame" src="" allow="autoplay; encrypted-media" allowfullscreen></iframe>
-            </div>
-
-            <!-- Bottom Right Quarter Split (Frames 3 & 4 with Controls enabled) -->
-            <div class="bottom-right-row">
-                <div class="bottom-right-box">
-                    <iframe id="vid3Frame" src="" allow="autoplay; encrypted-media" allowfullscreen></iframe>
-                </div>
-                <div class="bottom-right-box">
-                    <iframe id="vid4Frame" src="" allow="autoplay; encrypted-media" allowfullscreen></iframe>
-                </div>
-            </div>
+        <!-- Frame 2: Right Video -->
+        <div class="video-box">
+            <iframe id="rightFrame" src="" allow="autoplay; encrypted-media" allowfullscreen></iframe>
         </div>
     </div>
 
     <!-- Footer Ticker -->
     <footer>
         <div class="ticker-text" id="ticker">
-            &nbsp;|&nbsp; WELCOME TO THE PROVINCIAL HUMAN RESOURCE MANAGEMENT AND DEVELOPMENT OFFICE! &nbsp;|&nbsp; Please make yourself comfortable while waiting for your name to be called. In the meantime, kindly watch our ISO procedures video. &nbsp;|&nbsp; Thank you for your patience! &nbsp;|&nbsp;
+            &nbsp;|&nbsp; WELCOME TO THE PROVINCIAL HUMAN RESOURCE MANAGEMENT AND DEVELOPMENT OFFICE! &nbsp;|&nbsp; Please make yourself comfortable while waiting for your name to be called. In the meantime, kindly watch our displays. &nbsp;|&nbsp; Thank you for your patience! &nbsp;|&nbsp;
         </div>
     </footer>
 
     <script>
-        // --- 1. CONFIGURE FRAME 1 WEB LINK ---
-        const targetWebLink = "https://citizenscharter.launion.gov.ph/billboard/25?mode=tv";
+        // --- 1. CONFIGURE LEFT FRAME (Wider) ---
+        const targetLeftVideo = "https://citizenscharter.launion.gov.ph/billboard/25?mode=tv";
 
-        // --- 2. CONFIGURE FRAME 2 YOUTUBE EMBED (autoplay + mute + loop) ---
-        const targetVid2YouTube = "https://www.youtube.com/embed/eGIry6EOY6Y?autoplay=1&mute=1&loop=1&playlist=eGIry6EOY6Y&controls=1&rel=0";
+        // --- 2. CONFIGURE RIGHT FRAME (YouTube) ---
+        // To show a different video, replace the video ID below in both
+        // places (after "embed/" and after "playlist=").
+        const targetRightYouTube = "https://www.youtube.com/embed/eGIry6EOY6Y?autoplay=1&mute=1&loop=1&playlist=eGIry6EOY6Y&controls=1&rel=0";
 
-        // --- 3. CONFIGURE FRAME 3 YOUTUBE EMBED (Manual Input, autoplay + mute + loop) ---
-        const targetVid3YouTube = "https://www.youtube.com/embed/tg5aaNzgFxI?autoplay=1&mute=1&loop=1&playlist=tg5aaNzgFxI&controls=1&rel=0";
-
-        // --- 4. FRAME 4: RANDOM DRIVE VIDEO (3.mp4 - 8.mp4, Google Drive folder "VID3-8") ---
-        // A random video is picked on every page load. Note: Google's player
-        // cannot autoplay, so one remote press starts it (with sound).
-        const driveVideosFrame4 = [
-            "https://drive.google.com/file/d/1dle9BGVywx6zrQGC_v35CwTYVCSK7Ts6/preview", // 3.mp4
-            "https://drive.google.com/file/d/1_xQnOcIvBOgaqJHspvcJTHdkdw3lykFO/preview", // 4.mp4
-            "https://drive.google.com/file/d/1BbndEV2kOtf9w5bItILmMtz7ig0U9jPp/preview", // 5.mp4
-            "https://drive.google.com/file/d/15lIOfz2g7Vyi_tPHKDrdof9taYrpdhfC/preview", // 6.mp4
-            "https://drive.google.com/file/d/1ps-2jpsdkhBhnGo4S0_av6Tr8pybrV9g/preview", // 7.mp4
-            "https://drive.google.com/file/d/13mOcwKlwWA_BUZoSQsdTPObg0W2Q5KYL/preview"  // 8.mp4
-        ];
-        const randomDriveVideo = driveVideosFrame4[Math.floor(Math.random() * driveVideosFrame4.length)];
-
-        // --- SETUP ALL FRAMES ---
-        document.getElementById('webLinkFrame').src = targetWebLink;
-        document.getElementById('vid2Frame').src = targetVid2YouTube;
-        document.getElementById('vid3Frame').src = targetVid3YouTube;
-        document.getElementById('vid4Frame').src = randomDriveVideo;
+        // --- SETUP FRAMES ---
+        document.getElementById('leftFrame').src = targetLeftVideo;
+        document.getElementById('rightFrame').src = targetRightYouTube;
 
         // --- LIVE CLOCK & TICKER SCRIPT ---
         function updateClock() {
@@ -214,7 +159,7 @@
 
         const ticker = document.getElementById('ticker');
         let tickerPos = window.innerWidth;
-        
+
         function scrollTicker() {
             tickerPos -= 3;
             if (tickerPos < -ticker.offsetWidth) {
