@@ -191,51 +191,108 @@
         // --- 2. CONFIGURE TOP-RIGHT FRAME (YouTube Video) ---
         const targetRightYouTube = "https://www.youtube.com/embed/eGIry6EOY6Y?autoplay=1&mute=1&loop=1&playlist=eGIry6EOY6Y&controls=0&modestbranding=1&rel=0&iv_load_policy=3&disablekb=1&fs=0";
 
-        // --- 3. CONFIGURE BOTTOM-RIGHT SLIDESHOW (Google Drive Action Pictures) ---
-        const actionPhotos = [
-            "https://lh3.googleusercontent.com/d/1Formpul5iMFdb6Ym812vMaBIfkIhQM0z", // 1.HEIC
-            "https://lh3.googleusercontent.com/d/1RoSYp1Tq2TxeX_w3LHDbDoQKLRc16Rvc", // 2.PNG
-            "https://lh3.googleusercontent.com/d/1T9q6YwuOsFSHVpFDwQQmb-HDqL5XNRM9", // 3.jpg
-            "https://lh3.googleusercontent.com/d/1ryMXdsA_MYtw9A7T7BLYclfo8h3RduIx", // 4.JPG
-            "https://lh3.googleusercontent.com/d/13AEn99iHtNwjTGbkUPXq7Zp51CY5VPI7"  // 5.JPG
+        // --- 3. BOTTOM-RIGHT SLIDESHOW: photos load automatically from Google Drive ---
+        // The page reads the "HR ACTION PICTURES" folder on every refresh, so any
+        // photo added to the folder appears in the slideshow with no page updates.
+        var DRIVE_FOLDER_ID = "1WtJpMwUd7yn8bBur-z3zO3GcnhbT86Al";
+        var DRIVE_API_KEY = "AIzaSyDic2dFeDxf8P-I-NlDamdQ6u6ad8DAhrA";
+
+        // Fallback photos, shown only if the Drive folder can't be reached
+        // (no internet, or the key stops working). The show never goes black.
+        var fallbackPhotos = [
+            "https://lh3.googleusercontent.com/d/1Formpul5iMFdb6Ym812vMaBIfkIhQM0z",
+            "https://lh3.googleusercontent.com/d/1RoSYp1Tq2TxeX_w3LHDbDoQKLRc16Rvc",
+            "https://lh3.googleusercontent.com/d/1T9q6YwuOsFSHVpFDwQQmb-HDqL5XNRM9",
+            "https://lh3.googleusercontent.com/d/1ryMXdsA_MYtw9A7T7BLYclfo8h3RduIx",
+            "https://lh3.googleusercontent.com/d/13AEn99iHtNwjTGbkUPXq7Zp51CY5VPI7"
         ];
 
-        let currentPhotoIndex = 0;
-        const slideIntervalSeconds = 5; // Change picture every 5 seconds (adjust as needed)
-        let photoErrorStreak = 0;
+        var slideshowPhotos = [];
+        var currentPhotoIndex = 0;
+        var slideIntervalSeconds = 5; // Each photo shows for 5 seconds (adjust as needed)
+        var slideshowStarted = false;
+        var slideImg = document.getElementById('slideshowImage');
 
-        // Preload all photos so slides change smoothly with no black flash
-        actionPhotos.forEach(function(url) {
-            var preloader = new Image();
-            preloader.src = url;
-        });
-
-        function updateSlideshow() {
-            if (actionPhotos.length > 0) {
-                document.getElementById('slideshowImage').src = actionPhotos[currentPhotoIndex];
-                currentPhotoIndex = (currentPhotoIndex + 1) % actionPhotos.length;
-            }
+        function drivePhotoUrl(fileId) {
+            return "https://lh3.googleusercontent.com/d/" + fileId;
         }
 
-        // If a photo fails to load, skip to the next one right away instead
-        // of sitting on a broken image (gives up after trying each once)
-        document.getElementById('slideshowImage').addEventListener('error', function() {
-            photoErrorStreak++;
-            if (photoErrorStreak < actionPhotos.length) {
-                updateSlideshow();
+        // Each photo shows for 5 seconds, but only after it has fully loaded
+        // (no black flashes). Broken images are skipped instantly, so the
+        // slideshow never stalls.
+        function playNextPhoto() {
+            if (slideshowPhotos.length === 0) {
+                setTimeout(playNextPhoto, 5000);
+                return;
             }
-        });
-        document.getElementById('slideshowImage').addEventListener('load', function() {
-            photoErrorStreak = 0;
-        });
+            var url = slideshowPhotos[currentPhotoIndex];
+            currentPhotoIndex = (currentPhotoIndex + 1) % slideshowPhotos.length;
+            var preloader = new Image();
+            preloader.onload = function() {
+                slideImg.src = url;
+                setTimeout(playNextPhoto, slideIntervalSeconds * 1000);
+            };
+            preloader.onerror = function() {
+                playNextPhoto();
+            };
+            preloader.src = url;
+        }
+
+        function startSlideshow(photos) {
+            if (slideshowStarted) return; // never start the loop twice
+            slideshowStarted = true;
+            slideshowPhotos = photos;
+            currentPhotoIndex = 0;
+            playNextPhoto();
+        }
+
+        // Fetch the current photo list from the Drive folder
+        function loadDrivePhotos() {
+            var query = "'" + DRIVE_FOLDER_ID + "' in parents and mimeType contains 'image/' and trashed = false";
+            var apiUrl = "https://www.googleapis.com/drive/v3/files?q=" + encodeURIComponent(query) +
+                         "&key=" + DRIVE_API_KEY +
+                         "&fields=files(id,name)&orderBy=name&pageSize=100";
+            var xhr = new XMLHttpRequest();
+            var done = false;
+            function finishOk(urls) {
+                if (!done) { done = true; startSlideshow(urls); }
+            }
+            function finishFallback() {
+                if (!done) { done = true; startSlideshow(fallbackPhotos); }
+            }
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === 4) {
+                    try {
+                        var data = JSON.parse(xhr.responseText);
+                        if (xhr.status === 200 && data.files && data.files.length > 0) {
+                            var urls = [];
+                            for (var i = 0; i < data.files.length; i++) {
+                                urls.push(drivePhotoUrl(data.files[i].id));
+                            }
+                            finishOk(urls);
+                            return;
+                        }
+                    } catch (e) { /* fall through to fallback */ }
+                    finishFallback();
+                }
+            };
+            xhr.ontimeout = finishFallback;
+            xhr.onerror = finishFallback;
+            xhr.timeout = 15000;
+            try {
+                xhr.open("GET", apiUrl, true);
+                xhr.send();
+            } catch (e) {
+                finishFallback();
+            }
+        }
 
         // --- SETUP FRAMES ---
         document.getElementById('leftFrame').src = targetLeftVideo;
         document.getElementById('rightVideoFrame').src = targetRightYouTube;
 
-        // Start slideshow immediately and keep it looping forever
-        updateSlideshow();
-        setInterval(updateSlideshow, slideIntervalSeconds * 1000);
+        // Start the photo slideshow (loads the folder, falls back if needed)
+        loadDrivePhotos();
 
         // --- LIVE CLOCK & TICKER SCRIPT ---
         function updateClock() {
