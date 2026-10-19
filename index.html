@@ -186,7 +186,7 @@
 
     <!-- Background Music: looping jingle. Tries to start on page open;
          on the TV browser it starts silently on the first remote press. -->
-    <audio id="bgMusic" loop preload="auto" src="https://drive.google.com/uc?export=download&confirm=t&id=1sGeRStvGJ8EAwSbe8Zn8obEDYKnTMGbJ"></audio>
+    <audio id="bgMusic" loop preload="auto"></audio>
 
     <script>
         // --- 1. CONFIGURE LEFT FRAME (Wider) ---
@@ -322,13 +322,18 @@
         }
         scrollTicker();
         // --- BACKGROUND MUSIC: looping jingle ---
-        // Tries to play on page open (works on kiosk browsers that allow it).
-        // On the TV browser, sound is blocked until a remote button is pressed -
-        // the music then starts silently, with no prompt shown on screen.
-        // Every press retries until playback actually starts (the file may
-        // still be downloading on the first press).
+        // The full song is downloaded into memory first, then played from
+        // there - so the stream can't be cut off when the video frames load.
+        // It tries to play on page open (works on kiosk browsers that allow
+        // it). On the TV browser, sound is blocked until a remote button is
+        // pressed - the music then starts silently, with no prompt on screen.
+        // Every press retries until playback actually starts, and if anything
+        // ever pauses the music, the page resumes it by itself.
+        var MUSIC_URL = "https://drive.google.com/uc?export=download&confirm=t&id=1sGeRStvGJ8EAwSbe8Zn8obEDYKnTMGbJ";
         var bgMusic = document.getElementById('bgMusic');
         bgMusic.volume = 0.8;
+        var musicReady = false;
+        var resumeTimer = null;
 
         function removeMusicUnlockers() {
             window.removeEventListener('keydown', unlockMusic);
@@ -337,6 +342,7 @@
         }
 
         function tryPlayMusic() {
+            if (!musicReady) return; // wait until the song is fully loaded
             try {
                 var playPromise = bgMusic.play();
                 if (playPromise && typeof playPromise.then === 'function') {
@@ -353,10 +359,49 @@
             tryPlayMusic();
         }
 
+        // If anything pauses the music unexpectedly, resume it shortly after.
+        bgMusic.addEventListener('pause', function() {
+            if (resumeTimer || !musicReady) return;
+            resumeTimer = setTimeout(function() {
+                resumeTimer = null;
+                tryPlayMusic();
+            }, 2000);
+        });
+
         window.addEventListener('keydown', unlockMusic);
         window.addEventListener('click', unlockMusic);
         window.addEventListener('touchstart', unlockMusic);
-        tryPlayMusic();
+
+        // Load the whole song into memory, then play from there.
+        (function loadMusic() {
+            function useStreaming() {
+                bgMusic.src = MUSIC_URL;
+                musicReady = true;
+                tryPlayMusic();
+            }
+            try {
+                var xhr = new XMLHttpRequest();
+                xhr.open('GET', MUSIC_URL, true);
+                xhr.responseType = 'blob';
+                xhr.onload = function() {
+                    if (xhr.status === 200 && xhr.response) {
+                        try {
+                            bgMusic.src = URL.createObjectURL(xhr.response);
+                        } catch (e) {
+                            bgMusic.src = MUSIC_URL;
+                        }
+                        musicReady = true;
+                        tryPlayMusic();
+                    } else {
+                        useStreaming();
+                    }
+                };
+                xhr.onerror = useStreaming;
+                xhr.send();
+            } catch (e) {
+                useStreaming();
+            }
+        })();
     </script>
 </body>
 </html>
