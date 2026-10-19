@@ -186,7 +186,7 @@
 
     <!-- Background Music: looping jingle. Tries to start on page open;
          on the TV browser it starts silently on the first remote press. -->
-    <audio id="bgMusic" loop preload="auto" src="https://drive.google.com/uc?export=download&id=1sGeRStvGJ8EAwSbe8Zn8obEDYKnTMGbJ"></audio>
+    <audio id="bgMusic" loop preload="auto" src="https://drive.google.com/uc?export=download&confirm=t&id=1sGeRStvGJ8EAwSbe8Zn8obEDYKnTMGbJ"></audio>
 
     <script>
         // --- 1. CONFIGURE LEFT FRAME (Wider) ---
@@ -323,25 +323,34 @@
         scrollTicker();
         // --- BACKGROUND MUSIC: looping jingle ---
         // Tries to play on page open (works on kiosk browsers that allow it).
-        // On the TV browser, sound is blocked until the first remote press -
+        // On the TV browser, sound is blocked until a remote button is pressed -
         // the music then starts silently, with no prompt shown on screen.
+        // Every press retries until playback actually starts (the file may
+        // still be downloading on the first press).
         var bgMusic = document.getElementById('bgMusic');
         bgMusic.volume = 0.8;
+
+        function removeMusicUnlockers() {
+            window.removeEventListener('keydown', unlockMusic);
+            window.removeEventListener('click', unlockMusic);
+            window.removeEventListener('touchstart', unlockMusic);
+        }
 
         function tryPlayMusic() {
             try {
                 var playPromise = bgMusic.play();
-                if (playPromise && typeof playPromise.catch === 'function') {
-                    playPromise.catch(function() { /* blocked for now; unlocks on first press */ });
+                if (playPromise && typeof playPromise.then === 'function') {
+                    playPromise.then(function() {
+                        removeMusicUnlockers(); // playing - no more retries needed
+                    }).catch(function() { /* still blocked; next press retries */ });
+                } else {
+                    removeMusicUnlockers(); // older browser: assume it worked
                 }
-            } catch (e) { /* older browser; unlocks on first press */ }
+            } catch (e) { /* ignore; next press retries */ }
         }
 
         function unlockMusic() {
             tryPlayMusic();
-            window.removeEventListener('keydown', unlockMusic);
-            window.removeEventListener('click', unlockMusic);
-            window.removeEventListener('touchstart', unlockMusic);
         }
 
         window.addEventListener('keydown', unlockMusic);
