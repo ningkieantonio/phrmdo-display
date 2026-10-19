@@ -403,18 +403,25 @@
             }
         })();
 
-        // Watchdog: if the music is supposed to be playing but its
-        // playhead freezes (stalled or knocked out by the video frames),
-        // kick it back to life.
-        var watchdogLastTime = -1;
+        // Enforcer: every few seconds, make sure the music is actually
+        // playing. If the video frames knocked it out (paused) or its
+        // playhead froze (stalled), start it again. Calling play() on an
+        // already-playing song is harmless.
+        var enforcerLastTime = -1;
         setInterval(function() {
-            if (!musicReady || bgMusic.paused || bgMusic.seeking) return;
+            if (!musicReady || bgMusic.seeking) return;
             var t = bgMusic.currentTime;
-            if (watchdogLastTime >= 0 && t === watchdogLastTime) {
+            if (bgMusic.paused || (enforcerLastTime >= 0 && t === enforcerLastTime)) {
                 tryPlayMusic();
             }
-            watchdogLastTime = t;
-        }, 3000);
+            enforcerLastTime = t;
+        }, 4000);
+
+        // Safety net: if the song ever ends instead of looping, restart it.
+        bgMusic.addEventListener('ended', function() {
+            try { bgMusic.currentTime = 0; } catch (e) {}
+            tryPlayMusic();
+        });
     </script>
 </body>
 </html>
