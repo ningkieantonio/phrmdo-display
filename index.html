@@ -79,11 +79,12 @@
             pointer-events: auto;
         }
 
-        /* Frame 1: scaled to 67% to fit the TV browser layout */
+        /* Frame 1: scaled to 60% so the billboard content fits
+           inside the frame without being cut off at the edges */
         .left-box iframe {
-            width: 149.25%;
-            height: 149.25%;
-            transform: scale(0.67);
+            width: 166.67%;
+            height: 166.67%;
+            transform: scale(0.60);
             transform-origin: top left;
         }
 
