@@ -102,18 +102,6 @@
             overflow: hidden;
         }
 
-        /* Frame 2 YouTube player fills its box */
-        #ytPlayer {
-            width: 100%;
-            height: 100%;
-            background: #000;
-        }
-        #ytPlayer iframe {
-            width: 100%;
-            height: 100%;
-            display: block;
-        }
-
         /* General iframe styling */
         iframe {
             width: 100%;
@@ -179,7 +167,7 @@
         <div class="right-container">
             <!-- Frame 2: Top Right (YouTube Video) -->
             <div class="split-box">
-                <div id="ytPlayer"></div>
+                <iframe id="rightVideoFrame" src="" allow="autoplay; encrypted-media" allowfullscreen></iframe>
             </div>
 
             <!-- Frame 3: Bottom Right (Action Photo Slideshow from Google Drive) -->
@@ -196,19 +184,14 @@
         </div>
     </footer>
 
-    <!-- Background Music: looping jingle. Tries to start on page open;
-         on the TV browser it starts silently on the first remote press. -->
-    <audio id="bgMusic" loop preload="auto"></audio>
-
-    <script src="https://www.youtube.com/iframe_api"></script>
     <script>
         // --- 1. CONFIGURE LEFT FRAME (Wider) ---
         const targetLeftVideo = "https://citizenscharter.launion.gov.ph/billboard/25?mode=tv";
 
         // --- 2. CONFIGURE TOP-RIGHT FRAME (YouTube Video) ---
-        // To show a different video, replace the video ID below in all three
-        // places (videoId, playlist). Player chrome stays hidden.
-        var YT_VIDEO_ID = "eGIry6EOY6Y";
+        // To show a different video, replace the video ID below in both
+        // places (after "embed/" and after "playlist=").
+        const targetRightYouTube = "https://www.youtube.com/embed/eGIry6EOY6Y?autoplay=1&mute=1&loop=1&playlist=eGIry6EOY6Y&controls=0&modestbranding=1&rel=0&iv_load_policy=3&disablekb=1&fs=0";
 
         // --- 3. BOTTOM-RIGHT SLIDESHOW: photos load automatically from Google Drive ---
         // The page reads the "HR ACTION PICTURES" folder on every refresh, so any
@@ -308,60 +291,7 @@
 
         // --- SETUP FRAMES ---
         document.getElementById('leftFrame').src = targetLeftVideo;
-        // --- FRAME 2: YouTube player via IFrame API ---
-        // Mutes and plays on ready, restarts itself if it ever pauses or
-        // ends, and a watchdog kicks it every 5s if it's not playing.
-        // This is more forceful than embed-URL params alone.
-        var ytPlayer = null;
-        function startYtVideo() {
-            try {
-                if (ytPlayer && ytPlayer.playVideo) {
-                    ytPlayer.mute();
-                    ytPlayer.playVideo();
-                }
-            } catch (e) {}
-        }
-        function onYouTubeIframeAPIReady() {
-            ytPlayer = new YT.Player('ytPlayer', {
-                videoId: YT_VIDEO_ID,
-                playerVars: {
-                    autoplay: 1,
-                    mute: 1,
-                    loop: 1,
-                    playlist: YT_VIDEO_ID,
-                    controls: 0,
-                    modestbranding: 1,
-                    rel: 0,
-                    iv_load_policy: 3,
-                    disablekb: 1,
-                    fs: 0
-                },
-                events: {
-                    onReady: function(event) {
-                        event.target.mute();
-                        event.target.playVideo();
-                    },
-                    onStateChange: function(event) {
-                        if (event.data === YT.PlayerState.PAUSED ||
-                            event.data === YT.PlayerState.ENDED ||
-                            event.data === YT.PlayerState.CUED) {
-                            startYtVideo();
-                        }
-                    }
-                }
-            });
-        }
-        setInterval(function() {
-            try {
-                if (ytPlayer && ytPlayer.getPlayerState &&
-                    typeof YT !== 'undefined' && YT.PlayerState) {
-                    var s = ytPlayer.getPlayerState();
-                    if (s !== YT.PlayerState.PLAYING && s !== YT.PlayerState.BUFFERING) {
-                        startYtVideo();
-                    }
-                }
-            } catch (e) {}
-        }, 5000);
+        document.getElementById('rightVideoFrame').src = targetRightYouTube;
 
         // Start the photo slideshow (loads the folder, falls back if needed)
         loadDrivePhotos();
@@ -389,107 +319,6 @@
             requestAnimationFrame(scrollTicker);
         }
         scrollTicker();
-        // --- BACKGROUND MUSIC: looping jingle ---
-        // The full song is downloaded into memory first, then played from
-        // there - so the stream can't be cut off when the video frames load.
-        // It tries to play on page open (works on kiosk browsers that allow
-        // it). On the TV browser, sound is blocked until a remote button is
-        // pressed - the music then starts silently, with no prompt on screen.
-        // Every press retries until playback actually starts, and if anything
-        // ever pauses the music, the page resumes it by itself.
-        var MUSIC_URL = "https://drive.google.com/uc?export=download&confirm=t&id=1sGeRStvGJ8EAwSbe8Zn8obEDYKnTMGbJ";
-        var bgMusic = document.getElementById('bgMusic');
-        bgMusic.volume = 0.8;
-        var musicReady = false;
-        var resumeTimer = null;
-
-        function removeMusicUnlockers() {
-            window.removeEventListener('keydown', unlockMusic);
-            window.removeEventListener('click', unlockMusic);
-            window.removeEventListener('touchstart', unlockMusic);
-        }
-
-        function tryPlayMusic() {
-            if (!musicReady) return; // wait until the song is fully loaded
-            try {
-                var playPromise = bgMusic.play();
-                if (playPromise && typeof playPromise.then === 'function') {
-                    playPromise.then(function() {
-                        removeMusicUnlockers(); // playing - no more retries needed
-                    }).catch(function() { /* still blocked; next press retries */ });
-                } else {
-                    removeMusicUnlockers(); // older browser: assume it worked
-                }
-            } catch (e) { /* ignore; next press retries */ }
-        }
-
-        function unlockMusic() {
-            tryPlayMusic();
-        }
-
-        // If anything pauses the music unexpectedly, resume it shortly after.
-        bgMusic.addEventListener('pause', function() {
-            if (resumeTimer || !musicReady) return;
-            resumeTimer = setTimeout(function() {
-                resumeTimer = null;
-                tryPlayMusic();
-            }, 2000);
-        });
-
-        window.addEventListener('keydown', unlockMusic);
-        window.addEventListener('click', unlockMusic);
-        window.addEventListener('touchstart', unlockMusic);
-
-        // Load the whole song into memory, then play from there.
-        (function loadMusic() {
-            function useStreaming() {
-                bgMusic.src = MUSIC_URL;
-                musicReady = true;
-                tryPlayMusic();
-            }
-            try {
-                var xhr = new XMLHttpRequest();
-                xhr.open('GET', MUSIC_URL, true);
-                xhr.responseType = 'blob';
-                xhr.onload = function() {
-                    if (xhr.status === 200 && xhr.response) {
-                        try {
-                            bgMusic.src = URL.createObjectURL(xhr.response);
-                        } catch (e) {
-                            bgMusic.src = MUSIC_URL;
-                        }
-                        musicReady = true;
-                        tryPlayMusic();
-                    } else {
-                        useStreaming();
-                    }
-                };
-                xhr.onerror = useStreaming;
-                xhr.send();
-            } catch (e) {
-                useStreaming();
-            }
-        })();
-
-        // Enforcer: every few seconds, make sure the music is actually
-        // playing. If the video frames knocked it out (paused) or its
-        // playhead froze (stalled), start it again. Calling play() on an
-        // already-playing song is harmless.
-        var enforcerLastTime = -1;
-        setInterval(function() {
-            if (!musicReady || bgMusic.seeking) return;
-            var t = bgMusic.currentTime;
-            if (bgMusic.paused || (enforcerLastTime >= 0 && t === enforcerLastTime)) {
-                tryPlayMusic();
-            }
-            enforcerLastTime = t;
-        }, 4000);
-
-        // Safety net: if the song ever ends instead of looping, restart it.
-        bgMusic.addEventListener('ended', function() {
-            try { bgMusic.currentTime = 0; } catch (e) {}
-            tryPlayMusic();
-        });
     </script>
 </body>
 </html>
