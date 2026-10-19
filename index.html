@@ -184,6 +184,10 @@
         </div>
     </footer>
 
+    <!-- Background Music: looping jingle. Tries to start on page open;
+         on the TV browser it starts silently on the first remote press. -->
+    <audio id="bgMusic" loop preload="auto" src="https://drive.google.com/uc?export=download&id=1sGeRStvGJ8EAwSbe8Zn8obEDYKnTMGbJ"></audio>
+
     <script>
         // --- 1. CONFIGURE LEFT FRAME (Wider) ---
         const targetLeftVideo = "https://citizenscharter.launion.gov.ph/billboard/25?mode=tv";
@@ -317,6 +321,33 @@
             requestAnimationFrame(scrollTicker);
         }
         scrollTicker();
+        // --- BACKGROUND MUSIC: looping jingle ---
+        // Tries to play on page open (works on kiosk browsers that allow it).
+        // On the TV browser, sound is blocked until the first remote press -
+        // the music then starts silently, with no prompt shown on screen.
+        var bgMusic = document.getElementById('bgMusic');
+        bgMusic.volume = 0.8;
+
+        function tryPlayMusic() {
+            try {
+                var playPromise = bgMusic.play();
+                if (playPromise && typeof playPromise.catch === 'function') {
+                    playPromise.catch(function() { /* blocked for now; unlocks on first press */ });
+                }
+            } catch (e) { /* older browser; unlocks on first press */ }
+        }
+
+        function unlockMusic() {
+            tryPlayMusic();
+            window.removeEventListener('keydown', unlockMusic);
+            window.removeEventListener('click', unlockMusic);
+            window.removeEventListener('touchstart', unlockMusic);
+        }
+
+        window.addEventListener('keydown', unlockMusic);
+        window.addEventListener('click', unlockMusic);
+        window.addEventListener('touchstart', unlockMusic);
+        tryPlayMusic();
     </script>
 </body>
 </html>
