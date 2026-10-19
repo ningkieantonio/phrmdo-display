@@ -402,6 +402,19 @@
                 useStreaming();
             }
         })();
+
+        // Watchdog: if the music is supposed to be playing but its
+        // playhead freezes (stalled or knocked out by the video frames),
+        // kick it back to life.
+        var watchdogLastTime = -1;
+        setInterval(function() {
+            if (!musicReady || bgMusic.paused || bgMusic.seeking) return;
+            var t = bgMusic.currentTime;
+            if (watchdogLastTime >= 0 && t === watchdogLastTime) {
+                tryPlayMusic();
+            }
+            watchdogLastTime = t;
+        }, 3000);
     </script>
 </body>
 </html>
